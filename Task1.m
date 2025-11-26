@@ -1,0 +1,76 @@
+clc; clear; close all;
+
+%% 1. Paramètres
+N = 1e5;                  % Nombre de bits
+M = 4;                    % Ordre de modulation (QPSK)
+k = log2(M);              % Bits par symbole
+Rs = 1e5;                 % Débit symbole (100 ksym/s)
+Fs = Rs * 8;              % Fréquence d’échantillonnage (8 échantillons/symbole)
+sps = Fs / Rs;            % Échantillons par symbole
+
+%% 2. Source binaire
+bits = randi([0 1], N, 1);
+disp('Source binaire générée.');
+
+%% 3. Modulation QPSK directe
+symbols = pskmod(bits, M, pi/M, 'InputType', 'bit');  
+disp('Modulation QPSK effectuée.');
+
+%% 4. Filtrage Raised Cosine à l’émission
+rolloff = 0.25; span = 10; 
+rrcFilter = rcosdesign(rolloff, span, sps, 'sqrt');
+tx_signal = upfirdn(symbols, rrcFilter, sps, 1);
+disp('Filtrage Raised Cosine appliqué (émission).');
+
+%% 5. Canal sans bruit
+rx_signal = tx_signal; % pas de bruit pour l’instant
+
+%% 6. Filtrage Raised Cosine à la réception (apparié)
+rx_filtered = upfirdn(rx_signal, rrcFilter, 1, sps);
+delay = span; % délai de groupe (en symboles)
+rx_sync = rx_filtered(delay+1 : delay+length(symbols)); 
+disp('Filtrage apparié et synchronisation appliqués.');
+
+%% 7. Démodulation QPSK
+bits_rx = pskdemod(rx_sync, M, pi/M, 'OutputType', 'bit');
+
+%% 8. Vérification BER
+L = min(length(bits), length(bits_rx));
+BER = mean(bits(1:L) ~= bits_rx(1:L));
+disp(['BER (sans bruit) = ' num2str(BER)]);
+
+%% 9. Visualisation
+t = (0:length(tx_signal)-1)/Fs;
+
+figure('Name','Analyse du signal QPSK', 'Color', 'w');
+
+% Signal temporel
+subplot(2,2,1);
+plot(t(1:1000), real(tx_signal(1:1000)), 'LineWidth', 1.2);
+title('Signal temporel (partie réelle)');
+xlabel('Temps (s)');
+ylabel('Amplitude');
+grid on;
+
+% Spectre
+subplot(2,2,2);
+pwelch(tx_signal, [], [], [], Fs, 'centered');
+title('Spectre du signal transmis');
+
+% Constellation émise
+subplot(2,2,3);
+plot(real(symbols), imag(symbols), 'o', 'MarkerSize', 5, ...
+    'MarkerFaceColor', [0.2 0.5 1], 'MarkerEdgeColor', 'k');
+title('Constellation émise (baseband)');
+xlabel('In-Phase'); ylabel('Quadrature');
+axis equal; grid on;
+
+% Constellation reçue
+subplot(2,2,4);
+plot(real(rx_sync), imag(rx_sync), 'o', 'MarkerSize', 5, ...
+    'MarkerFaceColor', [1 0.2 0.2], 'MarkerEdgeColor', 'k');
+title('Constellation reçue après filtrage');
+xlabel('In-Phase'); ylabel('Quadrature');
+axis equal; grid on;
+
+disp('Simulation complète sans bruit terminée.');
