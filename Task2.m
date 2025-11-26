@@ -219,23 +219,23 @@ BER_theoretical_qpsk = erfc(sqrt(EbNo_linear)) / 2;
 
 fprintf('Simulation complete.\n\n');
 
-% --- Plot BER vs SNR ---
+% --- Plot BER vs SNR (in percentage) ---
 figure('Name', 'Section 2: BER vs SNR Performance', 'Position', [100 100 900 600]);
 
-semilogy(SNR_range, BER_qpsk_awgn, 'bo-', 'LineWidth', 2, 'MarkerSize', 8, 'DisplayName', 'QPSK - AWGN Only');
+semilogy(SNR_range, BER_qpsk_awgn * 100, 'bo-', 'LineWidth', 2, 'MarkerSize', 8, 'DisplayName', 'QPSK - AWGN Only');
 hold on;
-semilogy(SNR_range, BER_qpsk_impulsive, 'ms-', 'LineWidth', 2, 'MarkerSize', 8, 'DisplayName', 'QPSK - AWGN + Impulsive');
-semilogy(SNR_range, BER_qpsk_fading, 'g^-', 'LineWidth', 2, 'MarkerSize', 8, 'DisplayName', 'QPSK - Rayleigh Fading + AWGN');
-semilogy(SNR_range, BER_qpsk_combined, 'rd-', 'LineWidth', 2, 'MarkerSize', 8, 'DisplayName', 'QPSK - Combined Impairments');
-semilogy(SNR_range, BER_theoretical_qpsk, 'k--', 'LineWidth', 2, 'DisplayName', 'QPSK - Theoretical (AWGN)');
+semilogy(SNR_range, BER_qpsk_impulsive * 100, 'ms-', 'LineWidth', 2, 'MarkerSize', 8, 'DisplayName', 'QPSK - AWGN + Impulsive');
+semilogy(SNR_range, BER_qpsk_fading * 100, 'g^-', 'LineWidth', 2, 'MarkerSize', 8, 'DisplayName', 'QPSK - Rayleigh Fading + AWGN');
+semilogy(SNR_range, BER_qpsk_combined * 100, 'rd-', 'LineWidth', 2, 'MarkerSize', 8, 'DisplayName', 'QPSK - Combined Impairments');
+semilogy(SNR_range, BER_theoretical_qpsk * 100, 'k--', 'LineWidth', 2, 'DisplayName', 'QPSK - Theoretical (AWGN)');
 hold off;
 
 xlabel('SNR (dB)', 'FontSize', 12);
-ylabel('Bit Error Rate (BER)', 'FontSize', 12);
+ylabel('Bit Error Rate (%)', 'FontSize', 12);
 title('Section 2: BER vs SNR for QPSK with Different Channel Impairments', 'FontSize', 14);
 legend('Location', 'southwest', 'FontSize', 10);
 grid on;
-ylim([1e-6 1]);
+ylim([1e-4 100]);
 xlim([min(SNR_range) max(SNR_range)]);
 
 %% ========================================================================
@@ -327,7 +327,7 @@ end
 
 fprintf('Simulation complete.\n\n');
 
-% --- Plot 1: BER vs SNR Comparison ---
+% --- Plot 1: BER vs SNR Comparison (in percentage) ---
 figure('Name', 'Section 3: Modulation Comparison - BER vs SNR', 'Position', [150 150 900 600]);
 
 colors = {'b', 'g', 'r'};
@@ -335,23 +335,23 @@ markers = {'o', 's', '^'};
 
 for mod_idx = 1:num_modulations
     % Simulated BER
-    semilogy(SNR_range, BER_simulated(mod_idx, :), ...
+    semilogy(SNR_range, BER_simulated(mod_idx, :) * 100, ...
         [colors{mod_idx} markers{mod_idx} '-'], 'LineWidth', 2, 'MarkerSize', 8, ...
         'DisplayName', [modulation_names{mod_idx} ' - Simulated']);
     hold on;
     % Theoretical BER
-    semilogy(SNR_range, BER_theoretical(mod_idx, :), ...
+    semilogy(SNR_range, BER_theoretical(mod_idx, :) * 100, ...
         [colors{mod_idx} '--'], 'LineWidth', 2, ...
         'DisplayName', [modulation_names{mod_idx} ' - Theoretical']);
 end
 hold off;
 
 xlabel('SNR (dB)', 'FontSize', 12);
-ylabel('Bit Error Rate (BER)', 'FontSize', 12);
+ylabel('Bit Error Rate (%)', 'FontSize', 12);
 title('Section 3: BER vs SNR for Different Modulation Schemes (AWGN Channel)', 'FontSize', 14);
 legend('Location', 'southwest', 'FontSize', 9);
 grid on;
-ylim([1e-6 1]);
+ylim([1e-4 100]);
 xlim([min(SNR_range) max(SNR_range)]);
 
 % --- Plot 2: Constellation Diagrams ---
